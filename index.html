@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Christmas Bell</title>
+  <style>
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      font-family: sans-serif;
+      background: #10231b;
+      color: white;
+    }
+
+    main {
+      padding: 24px;
+    }
+
+    h1 {
+      font-size: 28px;
+    }
+
+    button {
+      margin-top: 20px;
+      padding: 16px 28px;
+      font-size: 18px;
+      border: none;
+      border-radius: 12px;
+      background: #d4af37;
+      color: #10231b;
+      font-weight: bold;
+    }
+
+    p {
+      margin-top: 20px;
+      font-size: 18px;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>🔔 Christmas Bell</h1>
+    <button id="startButton">Enable shake</button>
+    <p id="status">Tap the button, then shake your phone.</p>
+
+    <audio id="bell" src="bell.mp3" preload="auto"></audio>
+  </main>
+
+  <script>
+    const startButton = document.getElementById("startButton");
+    const status = document.getElementById("status");
+    const bell = document.getElementById("bell");
+
+    let lastShakeTime = 0;
+
+    function handleMotion(event) {
+      const acceleration = event.accelerationIncludingGravity;
+
+      if (!acceleration) return;
+
+      const x = acceleration.x || 0;
+      const y = acceleration.y || 0;
+      const z = acceleration.z || 0;
+
+      const force = Math.abs(x) + Math.abs(y) + Math.abs(z);
+      const now = Date.now();
+
+      if (force > 35 && now - lastShakeTime > 300) {
+        lastShakeTime = now;
+        bell.currentTime = 0;
+        bell.play();
+      }
+    }
+
+    startButton.addEventListener("click", async () => {
+      try {
+        if (typeof DeviceMotionEvent.requestPermission === "function") {
+          const permission = await DeviceMotionEvent.requestPermission();
+
+          if (permission !== "granted") {
+            status.textContent = "Motion sensors are not allowed.";
+            return;
+          }
+        }
+
+        window.addEventListener("devicemotion", handleMotion);
+        status.textContent = "Ready! Shake your phone 🔔";
+        startButton.textContent = "Bell enabled";
+      } catch (error) {
+        status.textContent = "Could not enable motion sensors.";
+      }
+    });
+  </script>
+</body>
+</html>
